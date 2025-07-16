@@ -1,6 +1,7 @@
 package com.iforddow.bizaudo.jpa.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,32 +34,44 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "expired")
-    private Boolean expired;
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "expired", nullable = false)
+    private Boolean expired = false;
 
-    @Column(name = "locked")
-    private Boolean locked;
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "locked", nullable = false)
+    private Boolean locked = false;
 
-    @Column(name = "credentials_expired")
-    private Boolean credentialsExpired;
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "credentials_expired", nullable = false)
+    private Boolean credentialsExpired = false;
 
-    @Column(name = "enabled")
-    private Boolean enabled;
+    @NotNull
+    @ColumnDefault("true")
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = false;
 
-    @Column(name = "last_active")
+    @NotNull
+    @Column(name = "last_active", nullable = false)
     private Instant lastActive;
 
-    @Column(name = "email_verified")
-    private Boolean emailVerified;
-
-    @OneToMany(mappedBy = "user")
-    private Set<UserProfile> userProfiles = new LinkedHashSet<>();
+    @NotNull
+    @ColumnDefault("false")
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    @OneToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "profile")
+    private UserProfile profile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -95,4 +108,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
 }

@@ -78,12 +78,24 @@ public class AuthService {
             throw new ResourceExistsException("A user with this email already exists");
         }
 
+        UUID newUserId = UUID.randomUUID();
+
+        UserProfile userProfile = UserProfile.builder()
+                .id(newUserId)
+                .createdAt(new Date().toInstant())
+                .build();
+
         // Create a new user
         User user = User.builder()
+                .id(newUserId)
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .
+                .createdAt(new Date().toInstant())
+                .lastActive(new Date().toInstant())
+                .profile(userProfile)
+                .build();
 
+        userRepository.save(user);
 
         return ResponseEntity.ok(userMapper.toPublicDTO(user));
 
