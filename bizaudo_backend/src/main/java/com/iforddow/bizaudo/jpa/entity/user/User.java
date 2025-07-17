@@ -51,7 +51,7 @@ public class User implements UserDetails {
     @Builder.Default
     @ColumnDefault("true")
     @Column(name = "enabled", nullable = false)
-    private Boolean enabled = false;
+    private Boolean enabled = true;
 
     @Column(name = "last_active", nullable = false)
     private Instant lastActive;

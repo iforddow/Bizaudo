@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record UserDTO(UUID id, String email, boolean enabled, boolean emailVerified,
-                      Instant lastActive, Set<String> roles) {
+                      Instant lastActive, Set<String> roles, UserProfileDTO userProfile) {
 
     public UserDTO(User user) {
         this(
@@ -18,7 +18,8 @@ public record UserDTO(UUID id, String email, boolean enabled, boolean emailVerif
                 user.getEnabled(),
                 user.getEmailVerified(),
                 user.getLastActive(),
-                extractRoles(user)
+                extractRoles(user),
+                user.getProfile() != null ? new UserProfileDTO(user.getProfile(), false) : null
         );
     }
 

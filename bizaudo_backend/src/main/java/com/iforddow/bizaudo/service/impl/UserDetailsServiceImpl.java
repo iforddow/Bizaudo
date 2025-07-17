@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.impl;
+package com.iforddow.bizaudo.service.impl;
 
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;

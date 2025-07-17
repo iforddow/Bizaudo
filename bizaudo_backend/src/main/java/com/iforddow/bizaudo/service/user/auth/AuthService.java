@@ -9,8 +9,6 @@ import com.iforddow.bizaudo.exception.ResourceExistsException;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
-import com.iforddow.bizaudo.mapper.user.UserMapper;
-import com.iforddow.bizaudo.mapper.user.UserProfileMapper;
 import com.iforddow.bizaudo.repository.auth.UserProfileRepository;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import com.iforddow.bizaudo.request.user.auth.LoginRequest;
@@ -42,9 +40,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserProfileRepository userProfileRepository;
-    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final UserProfileMapper userProfileMapper;
 
     /**
      * A method to handle user registration.
@@ -184,10 +180,9 @@ public class AuthService {
             // Save the updated user back to the database
             userRepository.save(user);
 
-            UserDTO userDTO = userMapper.toUserPublicDTO(user);
-            UserProfileDTO userProfileDTO = userProfileMapper.toProfileDTO(userProfile);
+            UserDTO userDTO = new UserDTO(user);
 
-            return ResponseEntity.ok(Map.of("accessToken", newAccessToken, "user", userDTO, "profile",  userProfileDTO));
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken, "user", userDTO));
 
         } else {
 

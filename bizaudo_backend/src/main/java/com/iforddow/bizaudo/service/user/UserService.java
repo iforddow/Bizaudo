@@ -1,10 +1,8 @@
 package com.iforddow.bizaudo.service.user;
 
 import com.iforddow.bizaudo.dto.user.UserDTO;
-import com.iforddow.bizaudo.dto.user.UserWithProfileDTO;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
 import com.iforddow.bizaudo.jpa.entity.user.User;
-import com.iforddow.bizaudo.mapper.user.UserMapper;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
     @Transactional
     public ResponseEntity<Map<String, Object>> delete(UUID id) {
@@ -37,7 +34,7 @@ public class UserService {
 
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        UserWithProfileDTO userWithProfileDTO = userMapper.toUserWithProfileDTO(user);
+        UserDTO userWithProfileDTO = new UserDTO(user);
 
         return ResponseEntity.ok(Map.of("result", userWithProfileDTO));
 
