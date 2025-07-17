@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.request.auth;
+package com.iforddow.bizaudo.request.user.auth;
 
 import lombok.Data;
 

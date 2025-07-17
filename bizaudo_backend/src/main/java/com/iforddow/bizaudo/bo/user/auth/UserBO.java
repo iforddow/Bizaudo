@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.bo;
+package com.iforddow.bizaudo.bo.user.auth;
 
 public class UserBO {
 

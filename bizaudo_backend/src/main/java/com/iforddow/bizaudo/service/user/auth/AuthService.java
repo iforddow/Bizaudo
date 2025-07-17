@@ -1,18 +1,20 @@
-package com.iforddow.bizaudo.service.auth;
+package com.iforddow.bizaudo.service.user.auth;
 
-import com.iforddow.bizaudo.bo.auth.RegisterBO;
+import com.iforddow.bizaudo.bo.user.auth.RegisterBO;
+import com.iforddow.bizaudo.dto.user.UserProfileDTO;
+import com.iforddow.bizaudo.dto.user.UserDTO;
 import com.iforddow.bizaudo.exception.BadRequestException;
 import com.iforddow.bizaudo.exception.InvalidCredentialsException;
 import com.iforddow.bizaudo.exception.ResourceExistsException;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
-import com.iforddow.bizaudo.impl.UserDetailsServiceImpl;
-import com.iforddow.bizaudo.jpa.entity.User;
-import com.iforddow.bizaudo.jpa.entity.UserProfile;
-import com.iforddow.bizaudo.mapper.UserMapper;
-import com.iforddow.bizaudo.repository.UserProfileRepository;
-import com.iforddow.bizaudo.repository.UserRepository;
-import com.iforddow.bizaudo.request.auth.LoginRequest;
-import com.iforddow.bizaudo.request.auth.RegisterRequest;
+import com.iforddow.bizaudo.jpa.entity.user.User;
+import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
+import com.iforddow.bizaudo.mapper.user.UserMapper;
+import com.iforddow.bizaudo.mapper.user.UserProfileMapper;
+import com.iforddow.bizaudo.repository.auth.UserProfileRepository;
+import com.iforddow.bizaudo.repository.auth.UserRepository;
+import com.iforddow.bizaudo.request.user.auth.LoginRequest;
+import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
 import com.iforddow.bizaudo.service.jwt.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,9 +27,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -35,18 +39,12 @@ import java.util.*;
 public class AuthService {
 
     private final UserRepository userRepository;
-
     private final AuthenticationManager authenticationManager;
-
     private final JwtService jwtService;
-
-    private final UserDetailsServiceImpl userDetailsService;
-
     private final UserProfileRepository userProfileRepository;
-
     private final UserMapper userMapper;
-
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileMapper userProfileMapper;
 
     /**
      * A method to handle user registration.
@@ -60,7 +58,7 @@ public class AuthService {
      * @since  2025-06-14
      * */
     @Transactional
-    public ResponseEntity<Map<String, Object>> register(RegisterRequest registerRequest, HttpServletResponse response) throws BadRequestException {
+    public ResponseEntity<Map<String, Object>> register(RegisterRequest registerRequest) throws BadRequestException {
 
         RegisterBO  registerBO = new RegisterBO();
 
@@ -79,25 +77,27 @@ public class AuthService {
         }
 
         UUID newUserId = UUID.randomUUID();
-
-        UserProfile userProfile = UserProfile.builder()
-                .id(newUserId)
-                .createdAt(new Date().toInstant())
-                .build();
+        Instant currentTime = Instant.now();
 
         // Create a new user
         User user = User.builder()
                 .id(newUserId)
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .createdAt(new Date().toInstant())
-                .lastActive(new Date().toInstant())
-                .profile(userProfile)
+                .createdAt(currentTime)
+                .lastActive(currentTime)
                 .build();
+
+        UserProfile profile = UserProfile.builder()
+                .createdAt(currentTime)
+                .user(user)
+                .build();
+
+        user.setProfile(profile);
 
         userRepository.save(user);
 
-        return ResponseEntity.ok(userMapper.toPublicDTO(user));
+        return ResponseEntity.ok(Map.of("result", "User successfully registered"));
 
     }
 
@@ -115,18 +115,9 @@ public class AuthService {
      * */
     public ResponseEntity<Map<String, Object>> login(LoginRequest loginRequest, HttpServletResponse response) throws BadRequestException {
 
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
-
-        // Check if the user exists
-        if(user.isEmpty()) {
-            throw new ResourceNotFoundException("User not found with email: " + loginRequest.getEmail());
-        }
-
-        Optional<UserProfile> userProfile = userProfileRepository.findByUser(user.get());
-
-        if(userProfile.isEmpty()) {
-            throw new ResourceNotFoundException("User profile not found for user with email: " + loginRequest.getEmail());
-        }
+        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User email not found")
+        );
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -144,8 +135,8 @@ public class AuthService {
             throw new BadRequestException("Authentication failed: " + ex.getMessage());
         }
 
-        String accessToken = jwtService.generateJwtToken(user.get());
-        String refreshToken = jwtService.generateRefreshToken(user.get());
+        String accessToken = jwtService.generateJwtToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
         Cookie refreshCookie = new Cookie("biz_rt", refreshToken);
 
@@ -177,29 +168,26 @@ public class AuthService {
 
             String id = jwtService.getUserIdFromToken(refreshToken);
 
-            Optional<User> user = userRepository.findById(UUID.fromString(id));
+            User user = userRepository.findById(UUID.fromString(id)).orElseThrow(
+                    () -> new UsernameNotFoundException("User with id: " + id + " not found.")
+            );
 
-            if (user.isEmpty()) {
-                throw new ResourceNotFoundException("User not found with id: " + id);
-            }
+            UserProfile userProfile = userProfileRepository.findByUser(user).orElseThrow(
+                    () -> new ResourceNotFoundException("User profile not found")
+            );
 
-            String newAccessToken = jwtService.generateJwtToken(user.get());
-
-            Optional<UserProfile> userProfile = userProfileRepository.findByUser(user.get());
-
-            if (userProfile.isEmpty()) {
-                throw new ResourceNotFoundException("User profile not found for user with email: " + email);
-            }
+            String newAccessToken = jwtService.generateJwtToken(user);
 
             // Update the user's last active time
-            user.get().setLastActive(new Date().toInstant());
+            user.setLastActive(new Date().toInstant());
 
             // Save the updated user back to the database
-            userRepository.save(user.get());
+            userRepository.save(user);
 
-            FullUserDTO userDTO = userMapper.toFullDTO(userMapper.toUser(userAuth.get(), userProfile.get()));
+            UserDTO userDTO = userMapper.toUserPublicDTO(user);
+            UserProfileDTO userProfileDTO = userProfileMapper.toProfileDTO(userProfile);
 
-            return ResponseEntity.ok(Map.of("accessToken", newAccessToken, "user", userDTO));
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken, "user", userDTO, "profile",  userProfileDTO));
 
         } else {
 

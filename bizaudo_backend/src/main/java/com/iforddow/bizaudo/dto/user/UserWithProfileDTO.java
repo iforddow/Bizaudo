@@ -1,25 +1,28 @@
 package com.iforddow.bizaudo.dto.user;
 
 import com.iforddow.bizaudo.jpa.entity.Role;
-import com.iforddow.bizaudo.jpa.entity.User;
+import com.iforddow.bizaudo.jpa.entity.user.User;
 
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public record UserPublicDTO(UUID id, String email, boolean enabled, boolean emailVerified,
-                            Instant lastActive, Set<String> roles) {
+public record UserWithProfileDTO(UUID id, String email, boolean enabled, boolean emailVerified,
+                                 Instant lastActive, Set<String> roles, UserProfileDTO profile) {
 
-    public UserPublicDTO(User user) {
+    public UserWithProfileDTO(User user) {
+
         this(
                 user.getId(),
                 user.getEmail(),
                 user.getEnabled(),
                 user.getEmailVerified(),
                 user.getLastActive(),
-                extractRoles(user)
+                extractRoles(user),
+                user.getProfile() != null ? new UserProfileDTO(user.getProfile(), false) : null
         );
+
     }
 
     private static Set<String> extractRoles(User user) {

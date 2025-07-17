@@ -1,6 +1,6 @@
 package com.iforddow.bizaudo.impl;
 
-import com.iforddow.bizaudo.repository.UserRepository;
+import com.iforddow.bizaudo.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,13 +1,11 @@
-package com.iforddow.bizaudo.jpa.entity;
+package com.iforddow.bizaudo.jpa.entity.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -22,7 +20,11 @@ public class UserProfile {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @NotNull
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "id")
+    private User user;
+
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -37,8 +39,5 @@ public class UserProfile {
     @Size(max = 100)
     @Column(name = "last_name", length = 100)
     private String lastName;
-
-    @OneToOne(mappedBy = "profile")
-    private User users;
 
 }

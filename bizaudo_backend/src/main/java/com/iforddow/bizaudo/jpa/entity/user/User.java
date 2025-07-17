@@ -1,7 +1,7 @@
-package com.iforddow.bizaudo.jpa.entity;
+package com.iforddow.bizaudo.jpa.entity.user;
 
+import com.iforddow.bizaudo.jpa.entity.Role;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 @Table(name = "\"user\"")
 public class User implements UserDetails {
     @Id
-    @ColumnDefault("gen_random_uuid()")
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -34,31 +33,30 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
-    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
     @Column(name = "expired", nullable = false)
     private Boolean expired = false;
 
-    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
     @Column(name = "locked", nullable = false)
     private Boolean locked = false;
 
-    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
     @Column(name = "credentials_expired", nullable = false)
     private Boolean credentialsExpired = false;
 
-    @NotNull
+    @Builder.Default
     @ColumnDefault("true")
     @Column(name = "enabled", nullable = false)
     private Boolean enabled = false;
 
-    @NotNull
     @Column(name = "last_active", nullable = false)
     private Instant lastActive;
 
-    @NotNull
+    @Builder.Default
     @ColumnDefault("false")
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
@@ -69,8 +67,7 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "profile")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,  orphanRemoval = true)
     private UserProfile profile;
 
     @Override

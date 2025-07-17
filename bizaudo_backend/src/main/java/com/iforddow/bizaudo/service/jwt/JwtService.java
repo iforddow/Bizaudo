@@ -1,6 +1,6 @@
 package com.iforddow.bizaudo.service.jwt;
 
-import com.iforddow.bizaudo.jpa.entity.User;
+import com.iforddow.bizaudo.jpa.entity.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;

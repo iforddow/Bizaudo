@@ -1,7 +1,7 @@
-package com.iforddow.bizaudo.repository;
+package com.iforddow.bizaudo.repository.auth;
 
-import com.iforddow.bizaudo.jpa.entity.User;
-import com.iforddow.bizaudo.jpa.entity.UserProfile;
+import com.iforddow.bizaudo.jpa.entity.user.User;
+import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

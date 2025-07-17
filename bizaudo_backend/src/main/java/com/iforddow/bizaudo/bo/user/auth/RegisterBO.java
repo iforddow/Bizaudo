@@ -1,6 +1,6 @@
-package com.iforddow.bizaudo.bo.auth;
+package com.iforddow.bizaudo.bo.user.auth;
 
-import com.iforddow.bizaudo.request.auth.RegisterRequest;
+import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
 
 import java.util.ArrayList;
 

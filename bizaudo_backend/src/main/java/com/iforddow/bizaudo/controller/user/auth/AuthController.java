@@ -1,8 +1,8 @@
-package com.iforddow.bizaudo.controller.auth;
+package com.iforddow.bizaudo.controller.user.auth;
 
-import com.iforddow.bizaudo.request.auth.LoginRequest;
-import com.iforddow.bizaudo.request.auth.RegisterRequest;
-import com.iforddow.bizaudo.service.auth.AuthService;
+import com.iforddow.bizaudo.request.user.auth.LoginRequest;
+import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
+import com.iforddow.bizaudo.service.user.auth.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -23,8 +23,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest registerRequest, HttpServletResponse response) {
-        return authService.register(registerRequest, response);
+    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest registerRequest) {
+        return authService.register(registerRequest);
     }
 
     @PostMapping("/refresh")
