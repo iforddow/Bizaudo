@@ -1,5 +1,6 @@
 package com.iforddow.bizaudo.filter;
 
+import com.iforddow.bizaudo.service.impl.UserDetailsServiceImpl;
 import com.iforddow.bizaudo.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,10 +10,10 @@ import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * A filter that checks for JWT tokens in the Authorization header of HTTP requests.
@@ -28,20 +29,20 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     // Initialize the UserDetailsService
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
     /**
      * A constructor for the JwtFilter class.
      *
      * @param jwtService The service used for JWT operations.
-     * @param userDetailsService The service used to load user details.
+     * @param userDetailsServiceImpl The service used to load user details.
      *
      * @author IFD
      * @since 2025-06-15
      * */
-    public JwtFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
     /**
@@ -71,11 +72,11 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String jwtToken = authHeader.substring(7);
-        String username = jwtService.getUserIdFromToken(jwtToken);
+        UUID userId = UUID.fromString(jwtService.getUserIdFromToken(jwtToken));
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if(SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = userDetailsServiceImpl.loadUserById(userId);
 
             if(jwtService.validateJwtToken(jwtToken)) {
 

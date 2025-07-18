@@ -1,6 +1,7 @@
-package com.iforddow.bizaudo.jpa.entity.user;
+package com.iforddow.bizaudo.jpa.entity.rbac;
 
-import com.iforddow.bizaudo.jpa.entity.Role;
+import com.iforddow.bizaudo.jpa.entity.business.Business;
+import com.iforddow.bizaudo.jpa.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,5 +27,11 @@ public class UserRole {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @MapsId("businessId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "business_id", nullable = false)
+    private Business business;
 
 }

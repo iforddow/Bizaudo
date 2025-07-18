@@ -28,13 +28,13 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, Object>> refreshToken(@CookieValue("biz_rt") String refreshToken) {
-        return authService.refreshToken(refreshToken);
+    public ResponseEntity<Map<String, Object>> refreshToken(@CookieValue("biz_rt") String refreshToken, HttpServletResponse response) {
+        return authService.refreshToken(refreshToken, response);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(@CookieValue("biz_rt") String refreshToken, HttpServletResponse response) {
-        return authService.logout(refreshToken, response);
+    public ResponseEntity<Map<String, Object>> logout(@CookieValue("biz_rt") String refreshToken, @RequestParam(name = "allDevices") boolean allDevices, HttpServletResponse response) {
+        return authService.logout(refreshToken, allDevices, response);
     }
 
 

@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.jpa.entity;
+package com.iforddow.bizaudo.jpa.entity.rbac;
 
 import jakarta.persistence.*;
 import lombok.Getter;

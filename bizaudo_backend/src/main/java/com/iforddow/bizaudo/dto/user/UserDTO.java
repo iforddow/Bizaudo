@@ -1,6 +1,7 @@
 package com.iforddow.bizaudo.dto.user;
 
-import com.iforddow.bizaudo.jpa.entity.Role;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.iforddow.bizaudo.jpa.entity.rbac.Role;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 
 import java.time.Instant;
@@ -9,9 +10,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public record UserDTO(UUID id, String email, boolean enabled, boolean emailVerified,
-                      Instant lastActive, Set<String> roles, UserProfileDTO userProfile) {
+                      Instant lastActive, Set<String> roles, @JsonInclude(JsonInclude.Include.NON_NULL) UserProfileDTO userProfile) {
 
-    public UserDTO(User user) {
+    public UserDTO(User user, boolean withProfile) {
         this(
                 user.getId(),
                 user.getEmail(),
@@ -19,7 +20,7 @@ public record UserDTO(UUID id, String email, boolean enabled, boolean emailVerif
                 user.getEmailVerified(),
                 user.getLastActive(),
                 extractRoles(user),
-                user.getProfile() != null ? new UserProfileDTO(user.getProfile(), false) : null
+                withProfile ? user.getProfile() != null ? new UserProfileDTO(user.getProfile(), false) : null : null
         );
     }
 

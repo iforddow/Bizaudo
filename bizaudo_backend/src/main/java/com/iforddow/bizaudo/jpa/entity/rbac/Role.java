@@ -1,5 +1,6 @@
-package com.iforddow.bizaudo.jpa.entity;
+package com.iforddow.bizaudo.jpa.entity.rbac;
 
+import com.iforddow.bizaudo.jpa.entity.business.Business;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -12,12 +12,24 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+* A class for user service REST methods.
+*
+* @author IFD
+* @since 2024-07-17
+* */
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
+    /**
+    * A method to delete a user by their id.
+    *
+    * @author IFD
+    * @since 2025-07-17
+    * */
     @Transactional
     public ResponseEntity<Map<String, Object>> delete(UUID id) {
 
@@ -29,14 +41,19 @@ public class UserService {
 
     }
 
-
+    /**
+    * A method to get a user by their id.
+    *
+    * @author IFD
+    * @since 2025-07-17
+    * */
     public ResponseEntity<Map<String, Object>> getUser(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        UserDTO userWithProfileDTO = new UserDTO(user);
+        UserDTO userDto = new UserDTO(user, true);
 
-        return ResponseEntity.ok(Map.of("result", userWithProfileDTO));
+        return ResponseEntity.ok(Map.of("result", userDto));
 
     }
 

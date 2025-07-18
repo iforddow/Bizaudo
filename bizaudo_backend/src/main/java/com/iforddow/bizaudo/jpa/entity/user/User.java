@@ -1,6 +1,6 @@
 package com.iforddow.bizaudo.jpa.entity.user;
 
-import com.iforddow.bizaudo.jpa.entity.Role;
+import com.iforddow.bizaudo.jpa.entity.rbac.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 @Table(name = "\"user\"")
 public class User implements UserDetails {
     @Id
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private UUID id;
 

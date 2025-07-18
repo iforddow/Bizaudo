@@ -1,5 +1,12 @@
 package com.iforddow.bizaudo.util;
 
+/**
+* A utility class to provide helpful methods
+* throughout the application.
+*
+* @author IFD
+* @since 2025-07-17
+* */
 public class BizUtils {
 
     /**
@@ -28,6 +35,22 @@ public class BizUtils {
      * */
     public static boolean isNullOrEmpty(String str) {
         return str == null || str.isEmpty();
+    }
+
+    /**
+    * A method to capitalize the first letter
+    * of a String.
+    *
+    * @author IFD
+    * @since 2025-07-18
+    * */
+    public static String capitalizeFirstLetter(String str) {
+
+        if(isNullOrEmpty(str)) {
+            return str;
+        }
+
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }
