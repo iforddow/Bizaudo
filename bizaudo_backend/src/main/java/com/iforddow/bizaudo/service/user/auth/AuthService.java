@@ -6,14 +6,13 @@ import com.iforddow.bizaudo.exception.BadRequestException;
 import com.iforddow.bizaudo.exception.InvalidCredentialsException;
 import com.iforddow.bizaudo.exception.ResourceExistsException;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
-import com.iforddow.bizaudo.jpa.entity.rbac.RefreshToken;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
-import com.iforddow.bizaudo.repository.auth.RefreshTokenRepository;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import com.iforddow.bizaudo.request.user.auth.LoginRequest;
 import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
 import com.iforddow.bizaudo.service.jwt.JwtService;
+import com.iforddow.bizaudo.service.redis.RedisRefreshTokenService;
 import com.iforddow.bizaudo.util.TokenHasher;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,8 +39,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final TokenHasher tokenHasher;
+    private final RedisRefreshTokenService redisRefreshTokenService;
 
     /**
      * A method to handle user registration.
@@ -149,19 +148,17 @@ public class AuthService {
 
         String hashedRefreshToken = tokenHasher.hmacSha256(refreshToken);
 
-        RefreshToken storedToken = refreshTokenRepository.findByTokenHash(hashedRefreshToken).orElseThrow(
-                () -> new ResourceNotFoundException("Refresh token not found")
-        );
+        UUID userId = redisRefreshTokenService.getUserIdFromToken(hashedRefreshToken);
 
-        if (storedToken.getExpiresAt().isBefore(Instant.now()) || storedToken.getRevoked()) {
-            throw new BadRequestException("Invalid refresh token");
+        if(userId == null) {
+            throw new BadRequestException("Invalid token");
         }
 
-        User user = storedToken.getUser();
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("User not found")
+        );
 
-        storedToken.setRevoked(true);
-
-        refreshTokenRepository.save(storedToken);
+        redisRefreshTokenService.revokeToken(hashedRefreshToken);
 
         String newAccessToken = createNewTokens(response, user);
 
@@ -195,22 +192,20 @@ public class AuthService {
 
         String hashedRefreshToken = tokenHasher.hmacSha256(refreshToken);
 
-        RefreshToken storedToken = refreshTokenRepository.findByTokenHash(hashedRefreshToken).orElseThrow(
-                () -> new ResourceNotFoundException("Refresh token not found")
-        );
+        if (allDevices) {
 
-        if(allDevices) {
-            List<RefreshToken> userRefreshTokens = refreshTokenRepository.findAllByUser(storedToken.getUser());
+            UUID userId = redisRefreshTokenService.getUserIdFromToken(hashedRefreshToken);
 
-            for (RefreshToken userRefreshToken : userRefreshTokens) {
-                userRefreshToken.setRevoked(true);
+            if (userId == null) {
+                throw new BadRequestException("Refresh token not found or expired");
             }
 
-            refreshTokenRepository.saveAll(userRefreshTokens);
-        }   else {
-            storedToken.setRevoked(true);
+            redisRefreshTokenService.revokeAllTokensForUser(userId);
 
-            refreshTokenRepository.save(storedToken);
+        } else {
+
+            redisRefreshTokenService.revokeToken(hashedRefreshToken);
+
         }
 
         // Invalidate the refresh token by setting it to null
@@ -239,15 +234,7 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(user);
         String newHashedRefreshToken = tokenHasher.hmacSha256(newRefreshToken);
 
-        RefreshToken newRefreshTokenEntity = RefreshToken.builder()
-                .user(user)
-                .tokenHash(newHashedRefreshToken)
-                .expiresAt(Instant.now().plusMillis(jwtService.jwtRefreshExpirationMs))
-                .revoked(false)
-                .createdAt(Instant.now())
-                .build();
-
-        refreshTokenRepository.save(newRefreshTokenEntity);
+        redisRefreshTokenService.storeToken(newHashedRefreshToken, user.getId(), Instant.now().plusMillis(jwtService.jwtRefreshExpirationMs));
 
         Cookie refreshCookie = new Cookie("biz_rt", newRefreshToken);
 

@@ -1,5 +1,7 @@
 package com.iforddow.bizaudo.controller.user;
 
+import com.iforddow.bizaudo.dto.user.UserDTO;
+import com.iforddow.bizaudo.exception.ResourceNotFoundException;
 import com.iforddow.bizaudo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +20,15 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String,Object>> getUser(@PathVariable UUID id){
-        return userService.getUser(id);
+    public ResponseEntity<UserDTO> getUser(@PathVariable UUID id) {
+
+        UserDTO user = userService.getUser(id);
+
+        if(user == null){
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        return ResponseEntity.ok().body(user);
     }
 
     @DeleteMapping("/{id}")

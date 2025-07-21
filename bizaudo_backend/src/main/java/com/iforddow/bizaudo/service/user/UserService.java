@@ -6,6 +6,7 @@ import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -47,13 +48,12 @@ public class UserService {
     * @author IFD
     * @since 2025-07-17
     * */
-    public ResponseEntity<Map<String, Object>> getUser(UUID id) {
+    @Cacheable(value = "users", key = "'user:' + #id", unless = "#result == null")
+    public UserDTO getUser(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        UserDTO userDto = new UserDTO(user, true);
-
-        return ResponseEntity.ok(Map.of("result", userDto));
+        return new UserDTO(user, true);
 
     }
 
