@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.iforddow.bizaudo.jpa.entity.rbac.Role;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 public record UserDTO(UUID id, String email, boolean enabled, boolean emailVerified,
                       Instant lastActive, @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-                      Set<String> roles, @JsonInclude(JsonInclude.Include.NON_NULL) UserProfileDTO userProfile) {
+                      Set<String> roles, @JsonInclude(JsonInclude.Include.NON_NULL) UserProfileDTO userProfile) implements Serializable {
 
     public UserDTO(User user, boolean withProfile) {
         this(

@@ -3,6 +3,7 @@ package com.iforddow.bizaudo.dto.user;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public record UserProfileDTO(
         String lastName,
         Instant createdAt,
         Instant lastUpdatedAt
-) {
+) implements Serializable {
     public UserProfileDTO(UserProfile userProfile, boolean includeId) {
         this(
                 includeId ? userProfile.getId() : null,
