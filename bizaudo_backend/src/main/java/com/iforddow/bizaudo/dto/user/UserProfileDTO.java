@@ -14,7 +14,7 @@ public record UserProfileDTO(
         String lastName,
         Instant createdAt,
         Instant lastUpdatedAt
-) implements Serializable {
+) {
     public UserProfileDTO(UserProfile userProfile, boolean includeId) {
         this(
                 includeId ? userProfile.getId() : null,
