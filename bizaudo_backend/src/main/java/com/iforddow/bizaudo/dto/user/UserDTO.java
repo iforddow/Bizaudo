@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.iforddow.bizaudo.jpa.entity.rbac.Role;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;

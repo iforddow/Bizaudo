@@ -48,7 +48,7 @@ public class UserService {
     * @author IFD
     * @since 2025-07-17
     * */
-    @Cacheable(cacheNames = "users", key = "'user:' + #id", unless = "#result == null")
+    @Cacheable(value = "userCache", key = "'user:' + #id", unless = "#result == null")
     public UserDTO getUser(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
