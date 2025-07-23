@@ -7,7 +7,6 @@ import java.util.UUID;
 @Data
 public class ChangePasswordRequest {
 
-    private UUID id;
     private String oldPassword;
     private String newPassword;
     private String confirmNewPassword;

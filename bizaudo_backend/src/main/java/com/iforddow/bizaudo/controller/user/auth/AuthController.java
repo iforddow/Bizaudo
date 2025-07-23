@@ -1,5 +1,6 @@
 package com.iforddow.bizaudo.controller.user.auth;
 
+import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import com.iforddow.bizaudo.request.user.auth.LoginRequest;
 import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
@@ -7,9 +8,13 @@ import com.iforddow.bizaudo.service.user.auth.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,10 +43,24 @@ public class AuthController {
         return authService.logout(refreshToken, allDevices, response);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+
+        authService.forgotPassword(email);
+        return ResponseEntity.ok("Password reset link sent to your email");
+
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
 
-        authService.changePassword(changePasswordRequest);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User user = (User) authentication.getPrincipal();
+        UUID userId = user.getId();
+
+        authService.changePassword(userId, changePasswordRequest);
 
         return ResponseEntity.ok("Password changed successfully");
 

@@ -34,7 +34,6 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) ->
                         requests
-                                .requestMatchers("/api/auth/change-password").authenticated()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest()
                                 .authenticated())

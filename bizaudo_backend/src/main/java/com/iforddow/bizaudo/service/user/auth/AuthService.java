@@ -230,11 +230,9 @@ public class AuthService {
      * @since 2025-07-22
      * */
     @Transactional
-    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    public void changePassword(UUID userId, ChangePasswordRequest changePasswordRequest) {
 
         AuthBO authBO = new AuthBO();
-
-        //Do BO validation
         ArrayList<String> errors = authBO.validateChangePassword(changePasswordRequest);
 
         //If BO validation is faulty throw an error
@@ -243,7 +241,7 @@ public class AuthService {
         }
 
         //Find user or throw an error
-        User user = userRepository.findById(changePasswordRequest.getId()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         //If old password is not users current password throw an error
         if(!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
