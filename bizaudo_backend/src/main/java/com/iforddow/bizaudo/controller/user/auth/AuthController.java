@@ -1,5 +1,6 @@
 package com.iforddow.bizaudo.controller.user.auth;
 
+import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import com.iforddow.bizaudo.request.user.auth.LoginRequest;
 import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
 import com.iforddow.bizaudo.service.user.auth.AuthService;
@@ -37,5 +38,13 @@ public class AuthController {
         return authService.logout(refreshToken, allDevices, response);
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+
+        authService.changePassword(changePasswordRequest);
+
+        return ResponseEntity.ok("Password changed successfully");
+
+    }
 
 }

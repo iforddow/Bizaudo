@@ -4,12 +4,14 @@ import com.iforddow.bizaudo.dto.user.UserDTO;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
+import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 

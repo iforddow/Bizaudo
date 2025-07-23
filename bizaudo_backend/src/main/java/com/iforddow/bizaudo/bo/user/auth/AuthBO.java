@@ -1,11 +1,19 @@
 package com.iforddow.bizaudo.bo.user.auth;
 
+import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
+import com.iforddow.bizaudo.util.BizUtils;
 
 import java.util.ArrayList;
 
-public class RegisterBO {
+public class AuthBO {
 
+    /**
+    * A method to validate the users registration
+    *
+    * @author IFD
+    * @since 2025-07-22
+    * */
     public ArrayList<String> validateUserRegistration(RegisterRequest registerRequest) {
 
         ArrayList<String> errors = new ArrayList<>();
@@ -91,6 +99,48 @@ public class RegisterBO {
         }
 
         return errors;
+    }
+
+    /**
+    * A method to validate changing a users password
+    *
+    * @author IFD
+    * @since 2025-07-22
+    * */
+    public ArrayList<String> validateChangePassword(ChangePasswordRequest changePasswordRequest) {
+
+        ArrayList<String> errors = new ArrayList<>();
+
+        String oldPassword = changePasswordRequest.getOldPassword();
+        String newPassword = changePasswordRequest.getNewPassword();
+        String confirmNewPassword = changePasswordRequest.getConfirmNewPassword();
+
+        if(BizUtils.isNullOrEmpty(oldPassword)) {
+            errors.add("Old password is required");
+        }
+
+        if(BizUtils.isNullOrEmpty(newPassword)) {
+            errors.add("New password is required");
+        }
+
+        if(BizUtils.isNullOrEmpty(confirmNewPassword)) {
+            errors.add("Confirm new password is required");
+        }
+
+        if(!newPassword.equals(confirmNewPassword)) {
+            errors.add("Confirm new passwords do not match");
+        }
+
+        if(oldPassword.equals(newPassword)) {
+            errors.add("New password can not be the same as the old password");
+        }
+
+        if(!validatePassword(newPassword).isEmpty()) {
+            errors.add("New password does not meet requirements");
+        }
+
+        return errors;
+
     }
 
 }

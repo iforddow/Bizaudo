@@ -1,6 +1,6 @@
 package com.iforddow.bizaudo.service.user.auth;
 
-import com.iforddow.bizaudo.bo.user.auth.RegisterBO;
+import com.iforddow.bizaudo.bo.user.auth.AuthBO;
 import com.iforddow.bizaudo.dto.user.UserDTO;
 import com.iforddow.bizaudo.exception.BadRequestException;
 import com.iforddow.bizaudo.exception.InvalidCredentialsException;
@@ -9,6 +9,7 @@ import com.iforddow.bizaudo.exception.ResourceNotFoundException;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
+import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import com.iforddow.bizaudo.request.user.auth.LoginRequest;
 import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
 import com.iforddow.bizaudo.service.jwt.JwtService;
@@ -53,9 +54,9 @@ public class AuthService {
     @Transactional
     public ResponseEntity<Map<String, Object>> register(RegisterRequest registerRequest) throws BadRequestException {
 
-        RegisterBO registerBO = new RegisterBO();
+        AuthBO authBO = new AuthBO();
 
-        ArrayList<String> errors = registerBO.validateUserRegistration(registerRequest);
+        ArrayList<String> errors = authBO.validateUserRegistration(registerRequest);
 
         if (!errors.isEmpty()) {
             throw new BadRequestException("Registration failed: " + String.join(", ", errors));
@@ -220,6 +221,44 @@ public class AuthService {
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
 
 
+    }
+
+    /*
+     * A method to change a users' password.
+     *
+     * @author IFD
+     * @since 2025-07-22
+     * */
+    @Transactional
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+
+        AuthBO authBO = new AuthBO();
+
+        //Do BO validation
+        ArrayList<String> errors = authBO.validateChangePassword(changePasswordRequest);
+
+        //If BO validation is faulty throw an error
+        if(!errors.isEmpty()) {
+            throw new BadRequestException("Unable to change password: " + String.join(", ", errors));
+        }
+
+        //Find user or throw an error
+        User user = userRepository.findById(changePasswordRequest.getId()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        //If old password is not users current password throw an error
+        if(!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            throw new BadRequestException("Incorrect old password");
+        }
+
+        //If new password is same as current password throw an error
+        if(passwordEncoder.matches(changePasswordRequest.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException("New password cannot be the same as the old password");
+        }
+
+        //Finally set and save new user password
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+
+        userRepository.save(user);
     }
 
     /**

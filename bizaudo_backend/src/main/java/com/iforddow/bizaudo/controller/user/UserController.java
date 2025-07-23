@@ -2,12 +2,14 @@ package com.iforddow.bizaudo.controller.user;
 
 import com.iforddow.bizaudo.dto.user.UserDTO;
 import com.iforddow.bizaudo.exception.ResourceNotFoundException;
+import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import com.iforddow.bizaudo.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
