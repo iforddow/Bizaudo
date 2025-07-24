@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.service.redis;
+package com.iforddow.bizaudo.service.util_service.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

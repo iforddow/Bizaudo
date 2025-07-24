@@ -1,9 +1,7 @@
 package com.iforddow.bizaudo.controller.user.auth;
 
 import com.iforddow.bizaudo.jpa.entity.user.User;
-import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
-import com.iforddow.bizaudo.request.user.auth.LoginRequest;
-import com.iforddow.bizaudo.request.user.auth.RegisterRequest;
+import com.iforddow.bizaudo.request.user.auth.*;
 import com.iforddow.bizaudo.service.user.auth.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,10 +42,25 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> payload) {
 
-        authService.forgotPassword(email);
-        return ResponseEntity.ok("Password reset link sent to your email");
+        String email = payload.get("email");
+
+        return ResponseEntity.ok(authService.requestForgotPassword(email));
+
+    }
+
+    @PostMapping("/forgot-password/check-code")
+    public ResponseEntity<Map<String, String>> forgotPasswordCheck(@RequestBody ForgotPasswordCodeRequest forgotPasswordCodeRequest) {
+
+        return ResponseEntity.ok(authService.checkForgotPasswordCode(forgotPasswordCodeRequest));
+
+    }
+
+    @PostMapping("/forgot-password/submit-new")
+    public ResponseEntity<String> forgotPasswordSubmitNew(@RequestBody ForgotPasswordSubmitRequest forgotPasswordRequest) {
+
+        return ResponseEntity.ok(authService.forgotPasswordSubmitNew(forgotPasswordRequest));
 
     }
 

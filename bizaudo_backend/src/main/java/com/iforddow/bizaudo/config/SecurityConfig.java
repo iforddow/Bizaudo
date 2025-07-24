@@ -1,8 +1,8 @@
 package com.iforddow.bizaudo.config;
 
 import com.iforddow.bizaudo.filter.JwtFilter;
-import com.iforddow.bizaudo.service.impl.UserDetailsServiceImpl;
-import com.iforddow.bizaudo.service.jwt.JwtService;
+import com.iforddow.bizaudo.service.util_service.impl.UserDetailsServiceImpl;
+import com.iforddow.bizaudo.service.util_service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
