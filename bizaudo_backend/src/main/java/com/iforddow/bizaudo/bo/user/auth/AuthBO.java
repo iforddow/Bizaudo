@@ -101,46 +101,42 @@ public class AuthBO {
         return errors;
     }
 
-    /**
-    * A method to validate changing a users password
+    /*
+    * A method to validate both a password and a confirmation
+    * password. Note the confirmation password is a simple
+    * equals check.
     *
     * @author IFD
-    * @since 2025-07-22
+    * @since 2025-07-24
     * */
-    public ArrayList<String> validateChangePassword(ChangePasswordRequest changePasswordRequest) {
+    public ArrayList<String> validatePassword(String password, String confirmPassword) {
 
-        ArrayList<String> errors = new ArrayList<>();
+        ArrayList<String> errors = new ArrayList<>(validatePassword(password));
 
-        String oldPassword = changePasswordRequest.getOldPassword();
-        String newPassword = changePasswordRequest.getNewPassword();
-        String confirmNewPassword = changePasswordRequest.getConfirmNewPassword();
-
-        if(BizUtils.isNullOrEmpty(oldPassword)) {
-            errors.add("Old password is required");
-        }
-
-        if(BizUtils.isNullOrEmpty(newPassword)) {
-            errors.add("New password is required");
-        }
-
-        if(BizUtils.isNullOrEmpty(confirmNewPassword)) {
-            errors.add("Confirm new password is required");
-        }
-
-        if(!newPassword.equals(confirmNewPassword)) {
-            errors.add("Confirm new passwords do not match");
-        }
-
-        if(oldPassword.equals(newPassword)) {
-            errors.add("New password can not be the same as the old password");
-        }
-
-        if(!validatePassword(newPassword).isEmpty()) {
-            errors.add("New password does not meet requirements");
+        if(!password.equals(confirmPassword)) {
+            errors.add("Passwords do not match");
         }
 
         return errors;
+    }
 
+    /**
+     * A method to validate changing a users password, will confirm
+     * the new password meets requirements, and the new password
+     * is not the same as the old.
+     *
+     * @author IFD
+     * @since 2025-07-22
+     * */
+    public ArrayList<String> validatePassword(String oldPassword, String password, String confirmPassword) {
+
+        ArrayList<String> errors = new ArrayList<>(validatePassword(password, confirmPassword));
+
+        if(password.equals(oldPassword)) {
+            errors.add("New password cannot be the same as the old password");
+        }
+
+        return errors;
     }
 
 }

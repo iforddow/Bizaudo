@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.service.util_service.jwt;
+package com.iforddow.bizaudo.service.util_service;
 
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import io.jsonwebtoken.*;

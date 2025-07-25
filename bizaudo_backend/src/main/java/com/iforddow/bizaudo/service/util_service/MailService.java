@@ -1,4 +1,4 @@
-package com.iforddow.bizaudo.service.util_service.mail;
+package com.iforddow.bizaudo.service.util_service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

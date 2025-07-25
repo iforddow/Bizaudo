@@ -7,6 +7,7 @@ import com.iforddow.bizaudo.repository.auth.UserRepository;
 import com.iforddow.bizaudo.request.user.auth.ChangePasswordRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class UserService {
     * @author IFD
     * @since 2025-07-17
     * */
+    @CacheEvict(value = "userCache", key = "'user' + #id")
     @Transactional
     public ResponseEntity<Map<String, Object>> delete(UUID id) {
 

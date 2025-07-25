@@ -10,10 +10,7 @@ import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.jpa.entity.user.UserProfile;
 import com.iforddow.bizaudo.repository.auth.UserRepository;
 import com.iforddow.bizaudo.request.user.auth.*;
-import com.iforddow.bizaudo.service.util_service.jwt.JwtService;
-import com.iforddow.bizaudo.service.util_service.mail.MailService;
-import com.iforddow.bizaudo.service.util_service.redis.RedisPasswordResetCodeService;
-import com.iforddow.bizaudo.service.util_service.redis.RedisPasswordResetTokenService;
+import com.iforddow.bizaudo.service.util_service.JwtService;
 import com.iforddow.bizaudo.service.util_service.redis.RedisRefreshTokenService;
 import com.iforddow.bizaudo.util.TokenHasher;
 import jakarta.servlet.http.Cookie;
@@ -43,9 +40,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenHasher tokenHasher;
     private final RedisRefreshTokenService redisRefreshTokenService;
-    private final RedisPasswordResetCodeService redisPasswordResetCodeService;
-    private final MailService mailService;
-    private final RedisPasswordResetTokenService redisPasswordResetTokenService;
 
     /**
      * A method to handle user registration.
@@ -224,145 +218,6 @@ public class AuthService {
 
         return ResponseEntity.ok(Map.of("message", "Logout successful"));
 
-
-    }
-
-    /*
-     * A method to change a users' password.
-     *
-     * @author IFD
-     * @since 2025-07-22
-     * */
-    @Transactional
-    public void changePassword(UUID userId, ChangePasswordRequest changePasswordRequest) {
-
-        AuthBO authBO = new AuthBO();
-        ArrayList<String> errors = authBO.validateChangePassword(changePasswordRequest);
-
-        //If BO validation is faulty throw an error
-        if(!errors.isEmpty()) {
-            throw new BadRequestException("Unable to change password: " + String.join(", ", errors));
-        }
-
-        //Find user or throw an error
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        //If old password is not users current password throw an error
-        if(!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
-            throw new BadRequestException("Incorrect old password");
-        }
-
-        //If new password is same as current password throw an error
-        if(passwordEncoder.matches(changePasswordRequest.getNewPassword(), user.getPassword())) {
-            throw new BadRequestException("New password cannot be the same as the old password");
-        }
-
-        //Finally set and save new user password
-        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
-
-        userRepository.save(user);
-    }
-
-    /*
-    * A method to request a new password due
-    * to a user forgetting their old one.
-    *
-    * @author IFD
-    * @since 2025-07-24
-    * */
-    public String requestForgotPassword(String email) {
-
-        Optional<User> user = userRepository.findByEmail(email);
-
-        System.out.println("Searching for user: " + email);
-
-        if(user.isPresent()) {
-
-            String token = redisPasswordResetCodeService.generateAndStoreCode(user.get().getId());
-
-            String content = "The following code can be used to reset your password: \n\n" +
-                    token +
-                    "\n\n" +
-                    "This code will expire in 10 minutes.";
-
-            mailService.sendMail(
-                    email,
-                    "Change Password Request",
-                    content
-            );
-
-        }   else {
-            System.out.println("User not found");
-        }
-
-        return "If an account with this email exists a code will be sent to reset your password";
-
-    }
-
-    /*
-    * A method to check if the forgot password code
-    * is correct. Give them a token if true.
-    *
-    * @author IFD
-    * @since 2025-07-24
-    * */
-    public Map<String, String> checkForgotPasswordCode(ForgotPasswordCodeRequest forgotPasswordCodeRequest) {
-
-        Optional<User> user = userRepository.findByEmail(forgotPasswordCodeRequest.getEmail());
-
-        if(user.isEmpty()) {
-            throw new BadRequestException("Invalid code received");
-        }
-
-        UUID userId = user.get().getId();
-        String code = forgotPasswordCodeRequest.getCode();
-
-        //See if code is valid.
-        if(!redisPasswordResetCodeService.checkValid(userId, code)) {
-            throw new BadRequestException("Invalid code received");
-        }
-
-        redisPasswordResetCodeService.deleteCode(userId);
-
-        //Now that code is valid we can give them a token to reset
-        //their password.
-        String token = redisPasswordResetTokenService.generateAndStoreToken(userId);
-
-        return Map.of("message", "Reset code successful",  "token", token);
-
-    }
-
-    public String forgotPasswordSubmitNew(ForgotPasswordSubmitRequest forgotPasswordSubmitRequest) {
-
-        User user = userRepository.findByEmail(forgotPasswordSubmitRequest.getEmail()).orElseThrow(() -> new BadRequestException("Invalid token"));
-
-        UUID userId = user.getId();
-        String token = forgotPasswordSubmitRequest.getToken();
-        String newPassword = forgotPasswordSubmitRequest.getNewPassword();
-        String confirmNewPassword = forgotPasswordSubmitRequest.getConfirmNewPassword();
-
-        if(!redisPasswordResetTokenService.validToken(userId, token)) {
-            throw new BadRequestException("Invalid token");
-        }
-
-        if(!newPassword.equals(confirmNewPassword)) {
-            throw new BadRequestException("New passwords do not match");
-        }
-
-        AuthBO authBO = new AuthBO();
-
-        ArrayList<String> errors = authBO.validatePassword(newPassword);
-
-        if(!errors.isEmpty()) {
-            throw new BadRequestException("Unable to change password: " + String.join(", ", errors));
-        }
-
-        //Finally set and save new user password
-        user.setPassword(passwordEncoder.encode(forgotPasswordSubmitRequest.getNewPassword()));
-
-        userRepository.save(user);
-
-        return "Password changed successfully";
 
     }
 

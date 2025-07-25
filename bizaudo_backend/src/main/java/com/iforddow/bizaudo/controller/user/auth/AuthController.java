@@ -3,6 +3,8 @@ package com.iforddow.bizaudo.controller.user.auth;
 import com.iforddow.bizaudo.jpa.entity.user.User;
 import com.iforddow.bizaudo.request.user.auth.*;
 import com.iforddow.bizaudo.service.user.auth.AuthService;
+import com.iforddow.bizaudo.service.user.auth.EmailVerificationService;
+import com.iforddow.bizaudo.service.user.auth.PasswordResetService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
@@ -42,25 +46,20 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<String> forgotPasswordRequest(@RequestParam String email) {
 
-        String email = payload.get("email");
+        passwordResetService.forgotPasswordRequest(email);
 
-        return ResponseEntity.ok(authService.requestForgotPassword(email));
-
-    }
-
-    @PostMapping("/forgot-password/check-code")
-    public ResponseEntity<Map<String, String>> forgotPasswordCheck(@RequestBody ForgotPasswordCodeRequest forgotPasswordCodeRequest) {
-
-        return ResponseEntity.ok(authService.checkForgotPasswordCode(forgotPasswordCodeRequest));
+        return ResponseEntity.ok("If an account with this email exists, a reset link will be sent");
 
     }
 
-    @PostMapping("/forgot-password/submit-new")
-    public ResponseEntity<String> forgotPasswordSubmitNew(@RequestBody ForgotPasswordSubmitRequest forgotPasswordRequest) {
+    @PostMapping("/forgot-password/submit")
+    public ResponseEntity<String> forgotPasswordSubmit(@RequestBody ForgotPasswordSubmitRequest forgotPasswordSubmitRequest) {
 
-        return ResponseEntity.ok(authService.forgotPasswordSubmitNew(forgotPasswordRequest));
+        passwordResetService.forgotPasswordSubmit(forgotPasswordSubmitRequest);
+
+        return ResponseEntity.ok("Password reset was successful");
 
     }
 
@@ -73,9 +72,29 @@ public class AuthController {
         User user = (User) authentication.getPrincipal();
         UUID userId = user.getId();
 
-        authService.changePassword(userId, changePasswordRequest);
+        passwordResetService.changePasswordRequest(userId, changePasswordRequest);
 
         return ResponseEntity.ok("Password changed successfully");
+
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> requestEmailVerification(@RequestParam String email) {
+
+        emailVerificationService.sendVerificationEmail(email);
+
+        return ResponseEntity.ok("Email verification email sent");
+
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/verify-email/submit")
+    public ResponseEntity<String> verifyEmail(@RequestParam UUID token) {
+
+        emailVerificationService.verifyEmail(token);
+
+        return ResponseEntity.ok("Email verified successfully");
 
     }
 

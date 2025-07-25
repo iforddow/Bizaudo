@@ -1,0 +1,16 @@
+.user_avatar_btn {
+  padding: calc(var(--mantine-spacing-xs) / 1.5) var(--mantine-spacing-sm);
+  border-radius: var(--popover-radius, var(--mantine-radius-default));
+  color: var(--menu-item-color, var(--mantine-color-text));
+  display: flex;
+  align-items: start;
+  user-select: none;
+}
+
+:where([data-mantine-color-scheme='dark']) .user_avatar_btn:hover {
+    background-color: var(--menu-item-hover, var(--mantine-color-dark-4))
+}
+
+:where([data-mantine-color-scheme='light']) .user_avatar_btn:hover {
+    background-color: var(--menu-item-hover, var(--mantine-color-gray-1));
+}

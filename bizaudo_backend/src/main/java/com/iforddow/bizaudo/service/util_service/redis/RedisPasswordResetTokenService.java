@@ -1,66 +1,46 @@
 package com.iforddow.bizaudo.service.util_service.redis;
 
-import com.iforddow.bizaudo.redis.templates.RedisObjectTemplate;
 import com.iforddow.bizaudo.util.BizUtils;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RedisPasswordResetTokenService {
 
-    private final RedisObjectTemplate redisObjectTemplate;
-    private final RedisConnectionFactory redisConnectionFactory;
-
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String TOKEN_PREFIX = "passwordResetToken:";
     private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
 
-    @PostConstruct
-    private void init() {
-        this.redisTemplate = redisObjectTemplate.redisTemplate(redisConnectionFactory);
-    }
+    public UUID generateAndStoreToken(UUID userId) {
 
-    public String generateAndStoreToken(UUID userId) {
+        UUID token = UUID.randomUUID();
 
-        String token = UUID.randomUUID().toString();
-
-        if(redisTemplate.hasKey(TOKEN_PREFIX + userId.toString())) {
-            redisTemplate.delete(TOKEN_PREFIX + userId);
-        }
-
-        redisTemplate.opsForValue().set(TOKEN_PREFIX + userId, token, TOKEN_TTL);
+        redisTemplate.opsForValue().set(TOKEN_PREFIX + token, userId, TOKEN_TTL);
 
         return token;
 
     }
 
-    public String getToken(UUID userId) {
+    public UUID getTokenValue(UUID token) {
 
-        Object value = redisTemplate.opsForValue().get(TOKEN_PREFIX + userId);
-        return value != null ? value.toString() : null;
+        Object value = redisTemplate.opsForValue().get(TOKEN_PREFIX + token);
+        return value != null ? UUID.fromString(value.toString()) : null;
 
     }
 
-    public boolean validToken(UUID userId, String token) {
+    public void deleteToken(UUID token) {
+        redisTemplate.delete(TOKEN_PREFIX + token);
+    }
 
-        if(!redisTemplate.hasKey(TOKEN_PREFIX + userId)) {
-            return false;
-        }
+    public boolean validToken(UUID token) {
 
-        if(BizUtils.isNullOrEmpty(getToken(userId))) {
-            return false;
-        }
-
-        return getToken(userId).equals(token);
+        return redisTemplate.hasKey(TOKEN_PREFIX + token) && !BizUtils.isNullOrEmpty(getTokenValue(token).toString());
 
     }
 

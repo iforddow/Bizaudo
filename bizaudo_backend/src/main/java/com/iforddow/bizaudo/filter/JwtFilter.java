@@ -1,7 +1,7 @@
 package com.iforddow.bizaudo.filter;
 
 import com.iforddow.bizaudo.service.util_service.impl.UserDetailsServiceImpl;
-import com.iforddow.bizaudo.service.util_service.jwt.JwtService;
+import com.iforddow.bizaudo.service.util_service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
